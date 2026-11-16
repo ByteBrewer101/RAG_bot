@@ -1,0 +1,188 @@
+@import "tailwindcss";
+
+/*
+  Palette
+  Cool Steel   #9cafb7
+  Dry Sage     #adb993
+  Golden Sand  #d0d38f
+  Apricot Cream #f6ca83
+  Palm Leaf    #949d6a
+*/
+
+/* ===== Base / Dark (softer, palette-derived) ===== */
+:root {
+  --background: #171c19;
+  --foreground: #f7f4ea;
+  --card: #1f2622;
+  --card-foreground: #f7f4ea;
+  --popover: #1f2622;
+  --popover-foreground: #f7f4ea;
+  --primary: #949d6a;
+  --primary-foreground: #171c19;
+  --secondary: #2a332d;
+  --secondary-foreground: #f7f4ea;
+  --muted: #242d27;
+  --muted-foreground: #c3cbbb;
+  --accent: #d0d38f;
+  --accent-foreground: #171c19;
+  --destructive: #b96a5e;
+  --destructive-foreground: #fffaf4;
+  --border: #3b463f;
+  --input: #3b463f;
+  --ring: #d0d38f;
+  --radius: 0.75rem;
+
+  --gradient-primary: linear-gradient(135deg, #949d6a 0%, #d0d38f 100%);
+  --gradient-primary-hover: linear-gradient(135deg, #a3ab76 0%, #dce08f 100%);
+
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains-mono);
+}
+
+/* ===== Light variant ===== */
+.light {
+  --background: #fbf3e4;
+  --foreground: #243029;
+  --card: #fffaf0;
+  --card-foreground: #243029;
+  --popover: #fffaf0;
+  --popover-foreground: #243029;
+  --primary: #9cafb7;
+  --primary-foreground: #18211d;
+  --secondary: #e7e2c8;
+  --secondary-foreground: #243029;
+  --muted: #ece6d3;
+  --muted-foreground: #5e6b63;
+  --accent: #949d6a;
+  --accent-foreground: #fdfaf1;
+  --destructive: #b4584d;
+  --destructive-foreground: #fffaf4;
+  --border: #c7ccb5;
+  --input: #c7ccb5;
+  --ring: #949d6a;
+
+  --gradient-primary: linear-gradient(135deg, #9cafb7 0%, #adb993 100%);
+  --gradient-primary-hover: linear-gradient(135deg, #aabac1 0%, #bcc7a3 100%);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+/* ===== Ambient background ===== */
+.mesh-gradient {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.95;
+  background:
+    radial-gradient(900px 500px at 10% 0%, rgba(246, 202, 131, 0.12), transparent 60%),
+    radial-gradient(700px 420px at 90% 10%, rgba(208, 211, 143, 0.12), transparent 55%),
+    radial-gradient(800px 520px at 0% 100%, rgba(148, 157, 106, 0.14), transparent 60%),
+    radial-gradient(700px 480px at 100% 100%, rgba(156, 175, 183, 0.1), transparent 55%),
+    linear-gradient(180deg, rgba(23, 28, 25, 0.25), rgba(23, 28, 25, 0));
+}
+
+.light .mesh-gradient {
+  opacity: 0.8;
+  background:
+    radial-gradient(900px 500px at 10% 0%, rgba(246, 202, 131, 0.28), transparent 60%),
+    radial-gradient(700px 420px at 90% 10%, rgba(208, 211, 143, 0.22), transparent 55%),
+    radial-gradient(800px 520px at 0% 100%, rgba(173, 185, 147, 0.18), transparent 60%),
+    radial-gradient(700px 480px at 100% 100%, rgba(156, 175, 183, 0.18), transparent 55%),
+    linear-gradient(180deg, rgba(251, 243, 228, 0.2), rgba(251, 243, 228, 0));
+}
+
+.mesh-gradient::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(247, 244, 234, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(247, 244, 234, 0.04) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 20%, black, transparent 80%);
+  opacity: 0.3;
+}
+
+.light .mesh-gradient::before {
+  background-image:
+    linear-gradient(rgba(36, 48, 41, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(36, 48, 41, 0.05) 1px, transparent 1px);
+  opacity: 0.25;
+}
+
+.mesh-gradient::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.18'/%3E%3C/svg%3E");
+  mix-blend-mode: soft-light;
+  opacity: 0.22;
+}
+
+@keyframes mesh-move {
+  0% { background-position: 0% 0%; }
+  50% { background-position: 100% 100%; }
+  100% { background-position: 0% 0%; }
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--border), var(--accent) 20%);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+
+::selection {
+  background: color-mix(in oklab, var(--primary), transparent 70%);
+  color: var(--foreground);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mesh-gradient {
+    animation: none !important;
+  }
+}

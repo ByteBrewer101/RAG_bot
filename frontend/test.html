@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NexusRAG — Developer Console</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            background: '#09090b',
+            foreground: '#fafafa',
+            card: '#0c0c0e',
+            muted: '#18181b',
+            'muted-foreground': '#a1a1aa',
+            border: '#27272a',
+            primary: '#fafafa',
+            'primary-foreground': '#09090b',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background-color: #09090b; color: #fafafa; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #09090b; }
+    ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+  </style>
+</head>
+<body class="h-screen overflow-hidden flex antialiased selection:bg-zinc-800 selection:text-white">
+
+  <!-- LEFT SIDEBAR -->
+  <aside id="sidebar" class="w-64 bg-card border-r border-border flex flex-col justify-between transition-all duration-200 shrink-0">
+    <div>
+      <!-- Project Switcher -->
+      <div class="p-3 border-b border-border relative">
+        <button onclick="toggleProjectMenu()" class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-muted transition text-left">
+          <div class="flex items-center gap-2.5 overflow-hidden">
+            <div class="size-8 rounded-md bg-white text-black flex items-center justify-center font-bold text-sm shrink-0">A</div>
+            <div class="truncate">
+              <div id="current-project-name" class="text-sm font-semibold truncate">Acme Docs Bot</div>
+              <div id="current-project-id" class="text-xs font-mono text-muted-foreground truncate">proj_89x2k1a</div>
+            </div>
+          </div>
+          <svg class="size-4 text-muted-foreground shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+        </button>
+
+        <!-- Project Dropdown -->
+        <div id="project-menu" class="hidden absolute left-3 right-3 top-16 z-50 bg-zinc-950 border border-border rounded-lg shadow-xl p-1.5">
+          <div class="px-2 py-1.5 text-xs font-medium text-muted-foreground">Switch Project</div>
+          <button onclick="selectProject('Acme Docs Bot', 'proj_89x2k1a')" class="w-full flex items-center justify-between px-2 py-1.5 text-sm rounded-md hover:bg-muted text-left">
+            <span>Acme Docs Bot</span>
+            <span class="text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded">prod</span>
+          </button>
+          <button onclick="selectProject('Support Staging', 'proj_33m9p0z')" class="w-full flex items-center justify-between px-2 py-1.5 text-sm rounded-md hover:bg-muted text-left">
+            <span>Support Staging</span>
+            <span class="text-[10px] font-mono bg-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded">dev</span>
+          </button>
+          <div class="my-1 border-t border-border"></div>
+          <button onclick="alert('Create Project Modal triggered')" class="w-full flex items-center gap-2 px-2 py-1.5 text-sm rounded-md hover:bg-muted text-zinc-300">
+            <span>+ Create new project</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Navigation Groups -->
+      <nav class="p-3 space-y-5">
+        <div>
+          <div class="px-2 mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Build</div>
+          <div class="space-y-0.5">
+            <button onclick="switchTab('overview')" data-tab="overview" class="nav-btn w-full flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm font-medium bg-muted text-white">
+              <svg class="size-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+              Overview
+            </button>
+            <button onclick="switchTab('sources')" data-tab="sources" class="nav-btn w-full flex items-center justify-between px-2.5 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-white hover:bg-muted/50">
+              <span class="flex items-center gap-2.5">
+                <svg class="size-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>
+                Knowledge Base
+              </span>
+              <span class="font-mono text-[11px] text-muted-foreground">1,420</span>
+            </button>
+            <button onclick="switchTab('playground')" data-tab="playground" class="nav-btn w-full flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-white hover:bg-muted/50">
+              <svg class="size-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+              Playground
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <div class="px-2 mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Deploy</div>
+          <div class="space-y-0.5">
+            <button onclick="switchTab('sdk')" data-tab="sdk" class="nav-btn w-full flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-white hover:bg-muted/50">
+              <svg class="size-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+              SDK & API Keys
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <div class="px-2 mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Observe</div>
+          <div class="space-y-0.5">
+            <button onclick="switchTab('logs')" data-tab="logs" class="nav-btn w-full flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-white hover:bg-muted/50">
+              <svg class="size-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+              Chat Logs
+            </button>
+          </div>
+        </div>
+      </nav>
+    </div>
+
+    <!-- Bottom User Footer -->
+    <div class="p-3 border-t border-border">
+      <div class="flex items-center gap-2.5 p-2 rounded-lg hover:bg-muted cursor-pointer">
+        <div class="size-8 rounded-full bg-zinc-800 border border-border flex items-center justify-center text-xs font-semibold">DV</div>
+        <div class="truncate">
+          <div class="text-sm font-medium truncate">Dev Engineer</div>
+          <div class="text-xs text-muted-foreground truncate">dev@acme.io</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT SHELL -->
+  <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+    <!-- Top Header -->
+    <header class="h-14 border-b border-border bg-card/50 px-6 flex items-center justify-between shrink-0">
+      <div class="flex items-center gap-2 text-sm">
+        <span class="text-muted-foreground">Projects</span>
+        <span class="text-zinc-600">/</span>
+        <span id="breadcrumb-project" class="text-muted-foreground">Acme Docs Bot</span>
+        <span class="text-zinc-600">/</span>
+        <span id="breadcrumb-page" class="font-medium text-white">Overview</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-md border border-border bg-background text-xs text-muted-foreground">
+          <span>Search docs or chunks...</span>
+          <kbd class="font-mono text-[10px] bg-muted px-1.5 py-0.5 rounded border border-border">⌘K</kbd>
+        </div>
+        <span class="inline-flex items-center gap-1.5 text-xs font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full">
+          <span class="size-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          API Operational
+        </span>
+      </div>
+    </header>
+
+    <!-- Scrollable Canvas -->
+    <main class="flex-1 overflow-y-auto p-6">
+      <div class="max-w-7xl mx-auto">
+
+        <!-- ==================== 1. OVERVIEW TAB ==================== -->
+        <section id="tab-overview" class="tab-panel space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h1 class="text-2xl font-semibold tracking-tight">Overview</h1>
+              <p class="text-sm text-muted-foreground">Monitor vector indexing, query volume, and retrieval latency.</p>
+            </div>
+            <button onclick="switchTab('sources')" class="inline-flex items-center gap-2 bg-white text-black hover:bg-zinc-200 font-medium text-sm px-4 py-2 rounded-md transition">
+              <span>+ Add Knowledge Sources</span>
+            </button>
+          </div>
+
+          <!-- Quickstart Banner -->
+          <div id="quickstart-banner" class="p-4 rounded-lg border border-border bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="space-y-1">
+              <div class="text-sm font-medium flex items-center gap-2">
+                <span class="text-amber-400">⚡</span> Quickstart: Embed your RAG bot in 2 lines
+              </div>
+              <p class="text-xs text-muted-foreground">Install the Node.js / React SDK and pass your project publishable key.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <code class="font-mono text-xs bg-background border border-border px-3 py-2 rounded-md text-zinc-200">npm install @nexusrag/sdk</code>
+              <button onclick="copyText('npm install @nexusrag/sdk', this)" class="text-xs font-medium px-3 py-2 rounded-md border border-border hover:bg-muted transition">Copy</button>
+              <button onclick="document.getElementById('quickstart-banner').remove()" class="text-muted-foreground hover:text-white px-2 text-sm">✕</button>
+            </div>
+          </div>
+
+          <!-- 4 KPI Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="p-5 rounded-lg border border-border bg-card space-y-2">
+              <div class="text-xs font-medium text-muted-foreground">Indexed Chunks</div>
+              <div class="text-2xl font-semibold font-mono">1,420</div>
+              <div class="text-xs text-emerald-400">+120 added this week</div>
+            </div>
+            <div class="p-5 rounded-lg border border-border bg-card space-y-2">
+              <div class="text-xs font-medium text-muted-foreground">Queries (24h)</div>
+              <div class="text-2xl font-semibold font-mono">8,942</div>
+              <div class="text-xs text-emerald-400">+18.2% vs yesterday</div>
+            </div>
+            <div class="p-5 rounded-lg border border-border bg-card space-y-2">
+              <div class="text-xs font-medium text-muted-foreground">Avg Retrieval Latency</div>
+              <div class="text-2xl font-semibold font-mono">184ms</div>
+              <div class="text-xs text-muted-foreground font-mono">p95: 310ms</div>
+            </div>
+            <div class="p-5 rounded-lg border border-border bg-card space-y-2">
+              <div class="text-xs font-medium text-muted-foreground">Token Usage (Month)</div>
+              <div class="text-2xl font-semibold font-mono">412.5k</div>
+              <div class="text-xs text-muted-foreground">41% of 1M quota</div>
+            </div>
+          </div>
+
+          <!-- Simulated SVG Area Chart -->
+          <div class="p-6 rounded-lg border border-border bg-card space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-sm font-semibold">Query Volume & Retrieval Hits</h3>
+                <p class="text-xs text-muted-foreground">Successful context matches over the last 7 days</p>
+              </div>
+              <div class="flex rounded-md border border-border bg-background p-0.5 text-xs">
+                <span class="px-2.5 py-1 rounded bg-muted text-white font-medium">7d</span>
+                <span class="px-2.5 py-1 text-muted-foreground">30d</span>
+                <span class="px-2.5 py-1 text-muted-foreground">90d</span>
+              </div>
+            </div>
+            <div class="h-52 w-full pt-4">
+              <svg viewBox="0 0 800 180" class="w-full h-full overflow-visible">
+                <defs>
+                  <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#ffffff" stop-opacity="0.22"/>
+                    <stop offset="100%" stop-color="#ffffff" stop-opacity="0.0"/>
+                  </linearGradient>
+                </defs>
+                <!-- Grid lines -->
+                <line x1="0" y1="30" x2="800" y2="30" stroke="#27272a" stroke-dasharray="4 4"/>
+                <line x1="0" y1="85" x2="800" y2="85" stroke="#27272a" stroke-dasharray="4 4"/>
+                <line x1="0" y1="140" x2="800" y2="140" stroke="#27272a"/>
+                <!-- Area -->
+                <path d="M0,125 C110,115 160,65 260,75 C360,85 430,35 530,45 C630,55 710,20 800,15 L800,140 L0,140 Z" fill="url(#chartGrad)"/>
+                <!-- Line -->
+                <path d="M0,125 C110,115 160,65 260,75 C360,85 430,35 530,45 C630,55 710,20 800,15" fill="none" stroke="#ffffff" stroke-width="2"/>
+                <!-- X labels -->
+                <text x="0" y="165" fill="#a1a1aa" font-size="11" font-family="JetBrains Mono">Nov 8</text>
+                <text x="190" y="165" fill="#a1a1aa" font-size="11" font-family="JetBrains Mono">Nov 10</text>
+                <text x="390" y="165" fill="#a1a1aa" font-size="11" font-family="JetBrains Mono">Nov 12</text>
+                <text x="590" y="165" fill="#a1a1aa" font-size="11" font-family="JetBrains Mono">Nov 13</text>
+                <text x="755" y="165" fill="#a1a1aa" font-size="11" font-family="JetBrains Mono">Nov 14</text>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Two Bottom Cards -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div class="p-5 rounded-lg border border-border bg-card space-y-3">
+              <h3 class="text-sm font-semibold">Recent Ingestion Jobs</h3>
+              <div class="divide-y divide-border text-sm">
+                <div class="py-2.5 flex items-center justify-between">
+                  <span class="font-mono text-xs">pricing-2026.pdf</span>
+                  <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">● Ready</span>
+                </div>
+                <div class="py-2.5 flex items-center justify-between">
+                  <span class="font-mono text-xs">https://docs.acme.com/api</span>
+                  <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">◌ Syncing</span>
+                </div>
+                <div class="py-2.5 flex items-center justify-between">
+                  <span class="font-mono text-xs">legacy-faq.csv</span>
+                  <span class="text-xs px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20">✕ Failed</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-5 rounded-lg border border-border bg-card space-y-3">
+              <h3 class="text-sm font-semibold">Unanswered Queries (Low Similarity)</h3>
+              <div class="divide-y divide-border text-sm">
+                <div class="py-2.5 flex items-center justify-between gap-2">
+                  <span class="truncate text-zinc-300">"Do you support SAML SSO on the Starter plan?"</span>
+                  <span class="font-mono text-xs text-red-400 shrink-0">0.41 score</span>
+                </div>
+                <div class="py-2.5 flex items-center justify-between gap-2">
+                  <span class="truncate text-zinc-300">"Webhook exponential backoff retry limits"</span>
+                  <span class="font-mono text-xs text-amber-400 shrink-0">0.54 score</span>
+                </div>
+                <div class="py-2.5 flex items-center justify-between gap-2">
+                  <span class="truncate text-zinc-300">"Self-hosted Docker airgap license key"</span>
+                  <span class="font-mono text-xs text-amber-400 shrink-0">0.58 score</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 2. KNOWLEDGE BASE TAB ==================== -->
+        <section id="tab-sources" class="tab-panel hidden space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h1 class="text-2xl font-semibold tracking-tight">Knowledge Base</h1>
+              <p class="text-sm text-muted-foreground">Upload files or crawl URLs. Click any row to inspect parsed vector chunks.</p>
+            </div>
+          </div>
+
+          <!-- Upload Dropzone Card -->
+          <div class="rounded-lg border border-border bg-card overflow-hidden">
+            <div class="flex border-b border-border bg-muted/30 px-4 pt-2 gap-4 text-sm">
+              <button class="pb-2.5 border-b-2 border-white font-medium text-white">File Upload</button>
+              <button class="pb-2.5 text-muted-foreground hover:text-white">Web Crawler</button>
+              <button class="pb-2.5 text-muted-foreground hover:text-white">Raw Text</button>
+            </div>
+            <div class="p-6">
+              <div onclick="simulateUpload()" class="border-2 border-dashed border-border hover:border-zinc-500 rounded-lg p-8 text-center cursor-pointer transition bg-background/50">
+                <div class="mx-auto size-10 rounded-full bg-muted flex items-center justify-center mb-3">↑</div>
+                <div class="text-sm font-medium">Click to simulate uploading a Markdown/PDF document</div>
+                <div class="text-xs text-muted-foreground mt-1">PDF, MD, DOCX, TXT up to 25MB • Auto-chunked (512 tokens, 50 overlap)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sources DataTable -->
+          <div class="rounded-lg border border-border bg-card overflow-hidden">
+            <div class="p-4 border-b border-border flex items-center justify-between gap-4">
+              <input type="text" placeholder="Filter sources..." class="bg-background border border-border rounded-md px-3 py-1.5 text-sm w-64 focus:outline-none focus:border-zinc-500">
+              <span class="text-xs text-muted-foreground">Click a document row to inspect chunks →</span>
+            </div>
+            <table class="w-full text-sm text-left">
+              <thead class="bg-muted/40 text-xs uppercase text-muted-foreground border-b border-border">
+                <tr>
+                  <th class="px-4 py-3 font-medium">Source Name</th>
+                  <th class="px-4 py-3 font-medium">Type</th>
+                  <th class="px-4 py-3 font-medium">Chunks</th>
+                  <th class="px-4 py-3 font-medium">Status</th>
+                  <th class="px-4 py-3 font-medium text-right">Last Synced</th>
+                </tr>
+              </thead>
+              <tbody id="sources-tbody" class="divide-y divide-border">
+                <tr onclick="openChunkSheet('product-guide-v4.pdf', 184)" class="hover:bg-muted/40 cursor-pointer transition">
+                  <td class="px-4 py-3.5 font-mono text-xs font-medium text-white">product-guide-v4.pdf</td>
+                  <td class="px-4 py-3.5"><span class="text-xs bg-muted px-2 py-0.5 rounded font-mono">PDF</span></td>
+                  <td class="px-4 py-3.5 font-mono text-xs">184</td>
+                  <td class="px-4 py-3.5"><span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">● Ready</span></td>
+                  <td class="px-4 py-3.5 text-right text-xs text-muted-foreground">10 mins ago</td>
+                </tr>
+                <tr onclick="openChunkSheet('https://docs.acme.com/auth', 210)" class="hover:bg-muted/40 cursor-pointer transition">
+                  <td class="px-4 py-3.5 font-mono text-xs font-medium text-white">https://docs.acme.com/auth</td>
+                  <td class="px-4 py-3.5"><span class="text-xs bg-muted px-2 py-0.5 rounded font-mono">URL</span></td>
+                  <td class="px-4 py-3.5 font-mono text-xs">210</td>
+                  <td class="px-4 py-3.5"><span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">● Ready</span></td>
+                  <td class="px-4 py-3.5 text-right text-xs text-muted-foreground">2 hours ago</td>
+                </tr>
+                <tr onclick="openChunkSheet('billing-and-quotas.md', 42)" class="hover:bg-muted/40 cursor-pointer transition">
+                  <td class="px-4 py-3.5 font-mono text-xs font-medium text-white">billing-and-quotas.md</td>
+                  <td class="px-4 py-3.5"><span class="text-xs bg-muted px-2 py-0.5 rounded font-mono">MD</span></td>
+                  <td class="px-4 py-3.5 font-mono text-xs">42</td>
+                  <td class="px-4 py-3.5"><span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">● Ready</span></td>
+                  <td class="px-4 py-3.5 text-right text-xs text-muted-foreground">1 day ago</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ==================== 3. PLAYGROUND TAB ==================== -->
+        <section id="tab-playground" class="tab-panel hidden space-y-4">
+          <div>
+            <h1 class="text-2xl font-semibold tracking-tight">RAG Playground</h1>
+            <p class="text-sm text-muted-foreground">Test your bot and inspect real-time vector similarity scores before deploying the SDK.</p>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 h-[620px]">
+            <!-- Left Chat Window (7 cols) -->
+            <div class="lg:col-span-7 rounded-lg border border-border bg-card flex flex-col overflow-hidden">
+              <div class="px-4 py-3 border-b border-border flex items-center justify-between bg-muted/30">
+                <span class="text-xs font-mono text-muted-foreground">SDK Widget Preview (v1.4.2)</span>
+                <button onclick="resetChat()" class="text-xs text-muted-foreground hover:text-white">Clear chat</button>
+              </div>
+
+              <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-4 text-sm">
+                <div class="flex gap-3">
+                  <div class="size-7 rounded-md bg-white text-black font-bold text-xs flex items-center justify-center shrink-0">AI</div>
+                  <div class="bg-muted/60 border border-border rounded-lg p-3 max-w-[85%] space-y-2">
+                    <p>Hi! Ask me anything about your indexed documentation.</p>
+                  </div>
+                </div>
+                <div class="flex gap-3 justify-end">
+                  <div class="bg-white text-black rounded-lg p-3 max-w-[85%] font-medium">
+                    How do I rotate my server secret key?
+                  </div>
+                </div>
+                <div class="flex gap-3">
+                  <div class="size-7 rounded-md bg-white text-black font-bold text-xs flex items-center justify-center shrink-0">AI</div>
+                  <div class="bg-muted/60 border border-border rounded-lg p-3 max-w-[85%] space-y-2.5">
+                    <p>You can rotate your <code class="font-mono text-xs bg-background px-1 py-0.5 rounded">sk_live_</code> key in the <strong>SDK & API Keys</strong> tab. Rotating immediately invalidates the old key after a 60-second grace period.</p>
+                    <div class="flex flex-wrap gap-1.5 pt-1">
+                      <span class="text-[11px] font-mono bg-background border border-border px-2 py-0.5 rounded text-zinc-300">📄 product-guide-v4.pdf (p.12)</span>
+                      <span class="text-[11px] font-mono bg-background border border-border px-2 py-0.5 rounded text-zinc-300">🔗 docs.acme.com/auth</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <form onsubmit="sendPlaygroundMsg(event)" class="p-3 border-t border-border bg-background flex gap-2">
+                <input id="chat-input" type="text" placeholder="Ask a question against your knowledge base..." class="flex-1 bg-card border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:border-zinc-500">
+                <button type="submit" class="bg-white text-black font-medium text-sm px-4 py-2 rounded-md hover:bg-zinc-200 transition">Send</button>
+              </form>
+            </div>
+
+            <!-- Right Retrieval Inspector (5 cols) -->
+            <div class="lg:col-span-5 rounded-lg border border-border bg-card flex flex-col overflow-hidden">
+              <div class="px-4 py-3 border-b border-border bg-muted/30">
+                <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Retrieval & Parameters</span>
+              </div>
+              <div class="p-4 overflow-y-auto space-y-5 text-sm">
+                <!-- Sliders -->
+                <div class="space-y-3">
+                  <div>
+                    <div class="flex justify-between text-xs mb-1">
+                      <span class="text-muted-foreground">Top-K Chunks</span>
+                      <span id="topk-val" class="font-mono">3</span>
+                    </div>
+                    <input type="range" min="1" max="10" value="3" oninput="document.getElementById('topk-val').innerText=this.value" class="w-full accent-white">
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-xs mb-1">
+                      <span class="text-muted-foreground">Similarity Threshold</span>
+                      <span id="sim-val" class="font-mono">0.72</span>
+                    </div>
+                    <input type="range" min="0.50" max="0.95" step="0.01" value="0.72" oninput="document.getElementById('sim-val').innerText=this.value" class="w-full accent-white">
+                  </div>
+                </div>
+
+                <div class="border-t border-border pt-4 space-y-2.5">
+                  <div class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Retrieved Context (Last Query)</div>
+
+                  <div class="p-3 rounded-md border border-border bg-background space-y-1.5">
+                    <div class="flex items-center justify-between text-xs font-mono">
+                      <span class="text-zinc-300">chunk_901 • product-guide-v4.pdf</span>
+                      <span class="text-emerald-400">0.914</span>
+                    </div>
+                    <p class="text-xs text-muted-foreground leading-relaxed">"...To rotate server secret keys (sk_live_*), navigate to Deploy &gt; SDK &amp; API Keys. Old keys remain active for 60s to prevent zero-downtime deployment drops..."</p>
+                  </div>
+
+                  <div class="p-3 rounded-md border border-border bg-background space-y-1.5">
+                    <div class="flex items-center justify-between text-xs font-mono">
+                      <span class="text-zinc-300">chunk_412 • docs.acme.com/auth</span>
+                      <span class="text-emerald-400">0.847</span>
+                    </div>
+                    <p class="text-xs text-muted-foreground leading-relaxed">"...Never expose sk_live keys in client-side bundles. Use pk_live keys with Allowed Origins configured..."</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 4. SDK & API KEYS TAB ==================== -->
+        <section id="tab-sdk" class="tab-panel hidden space-y-6">
+          <div>
+            <h1 class="text-2xl font-semibold tracking-tight">SDK & API Keys</h1>
+            <p class="text-sm text-muted-foreground">Install the readymade chatbot in your Next.js or Node.js app.</p>
+          </div>
+
+          <!-- API Keys Table -->
+          <div class="rounded-lg border border-border bg-card overflow-hidden">
+            <div class="p-4 border-b border-border flex items-center justify-between">
+              <h3 class="text-sm font-semibold">Project Credentials</h3>
+              <button onclick="alert('New key generated')" class="text-xs font-medium px-3 py-1.5 rounded-md border border-border hover:bg-muted">Rotate Secret Key</button>
+            </div>
+            <div class="divide-y divide-border text-sm">
+              <div class="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <div class="font-medium">Publishable Key <span class="text-xs text-muted-foreground font-normal">(Safe for frontend widget)</span></div>
+                  <div class="font-mono text-xs text-muted-foreground mt-0.5">pk_live_98a7sd98a7sd98a7sd98</div>
+                </div>
+                <button onclick="copyText('pk_live_98a7sd98a7sd98a7sd98', this)" class="text-xs font-medium px-3 py-1.5 rounded-md border border-border hover:bg-muted self-start">Copy Key</button>
+              </div>
+              <div class="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <div class="font-medium">Secret Server Key <span class="text-xs text-amber-400 font-normal">(Backend ingestion only)</span></div>
+                  <div class="font-mono text-xs text-muted-foreground mt-0.5">sk_live_••••••••••••••••••••••••4f9a</div>
+                </div>
+                <button onclick="copyText('sk_live_mock_secret_key_4f9a', this)" class="text-xs font-medium px-3 py-1.5 rounded-md border border-border hover:bg-muted self-start">Copy Secret</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Code Snippet Card -->
+          <div class="rounded-lg border border-border bg-card overflow-hidden">
+            <div class="px-4 py-3 border-b border-border bg-muted/30 flex items-center justify-between">
+              <span class="text-xs font-mono text-zinc-300">React / Next.js Integration</span>
+              <button onclick="copyText(document.getElementById('sdk-code').innerText, this)" class="text-xs font-medium px-2.5 py-1 rounded border border-border hover:bg-muted">Copy Snippet</button>
+            </div>
+            <pre id="sdk-code" class="p-4 text-xs font-mono text-zinc-200 overflow-x-auto leading-relaxed bg-background"><code>import { NexusChatWidget } from '@nexusrag/sdk/react';
+
+export default function AppLayout({ children }) {
+  return (
+    &lt;&gt;
+      {children}
+      &lt;NexusChatWidget
+        projectId="proj_89x2k1a"
+        publishableKey="pk_live_98a7sd98a7sd98a7sd98"
+        theme="dark"
+        accentColor="#ffffff"
+      /&gt;
+    &lt;/&gt;
+  );
+}</code></pre>
+          </div>
+        </section>
+
+        <!-- ==================== 5. CHAT LOGS TAB ==================== -->
+        <section id="tab-logs" class="tab-panel hidden space-y-6">
+          <div>
+            <h1 class="text-2xl font-semibold tracking-tight">Chat Logs</h1>
+            <p class="text-sm text-muted-foreground">Real-time production traces from end-users interacting with your SDK widget.</p>
+          </div>
+
+          <div class="rounded-lg border border-border bg-card overflow-hidden">
+            <table class="w-full text-sm text-left">
+              <thead class="bg-muted/40 text-xs uppercase text-muted-foreground border-b border-border">
+                <tr>
+                  <th class="px-4 py-3 font-medium">User Query</th>
+                  <th class="px-4 py-3 font-medium">Top Score</th>
+                  <th class="px-4 py-3 font-medium">Latency</th>
+                  <th class="px-4 py-3 font-medium text-right">Timestamp</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-border">
+                <tr class="hover:bg-muted/40">
+                  <td class="px-4 py-3.5 text-zinc-200">How do I configure custom domains for the widget?</td>
+                  <td class="px-4 py-3.5 font-mono text-xs text-emerald-400">0.89</td>
+                  <td class="px-4 py-3.5 font-mono text-xs text-muted-foreground">162ms</td>
+                  <td class="px-4 py-3.5 text-right text-xs text-muted-foreground">2 mins ago</td>
+                </tr>
+                <tr class="hover:bg-muted/40">
+                  <td class="px-4 py-3.5 text-zinc-200">Do you support SAML SSO on the Starter plan?</td>
+                  <td class="px-4 py-3.5 font-mono text-xs text-red-400">0.41 (Fallback)</td>
+                  <td class="px-4 py-3.5 font-mono text-xs text-muted-foreground">140ms</td>
+                  <td class="px-4 py-3.5 text-right text-xs text-muted-foreground">14 mins ago</td>
+                </tr>
+                <tr class="hover:bg-muted/40">
+                  <td class="px-4 py-3.5 text-zinc-200">What is the maximum PDF upload size?</td>
+                  <td class="px-4 py-3.5 font-mono text-xs text-emerald-400">0.94</td>
+                  <td class="px-4 py-3.5 font-mono text-xs text-muted-foreground">195ms</td>
+                  <td class="px-4 py-3.5 text-right text-xs text-muted-foreground">41 mins ago</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- SLIDE-OVER CHUNK INSPECTOR SHEET -->
+  <div id="chunk-sheet" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex justify-end">
+    <div class="w-full max-w-lg bg-card border-l border-border h-full flex flex-col shadow-2xl">
+      <div class="p-5 border-b border-border flex items-center justify-between">
+        <div>
+          <h3 id="sheet-title" class="font-mono text-sm font-semibold">product-guide-v4.pdf</h3>
+          <p id="sheet-meta" class="text-xs text-muted-foreground mt-0.5">184 chunks • text-embedding-3-small • 512 tokens</p>
+        </div>
+        <button onclick="closeChunkSheet()" class="size-8 rounded-md hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-white">✕</button>
+      </div>
+      <div class="p-4 border-b border-border">
+        <input type="text" placeholder="Search inside parsed chunks..." class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-zinc-500">
+      </div>
+      <div class="flex-1 overflow-y-auto p-4 space-y-3">
+        <div class="p-3.5 rounded-lg border border-border bg-background space-y-2">
+          <div class="flex justify-between text-xs font-mono text-muted-foreground">
+            <span>Chunk #001</span>
+            <span>498 tokens</span>
+          </div>
+          <p class="text-xs text-zinc-300 leading-relaxed">NexusRAG provides a drop-in Node.js and React SDK that connects directly to your project's vector index. Each project maintains isolated namespaces and API credentials.</p>
+        </div>
+        <div class="p-3.5 rounded-lg border border-border bg-background space-y-2">
+          <div class="flex justify-between text-xs font-mono text-muted-foreground">
+            <span>Chunk #002</span>
+            <span>510 tokens</span>
+          </div>
+          <p class="text-xs text-zinc-300 leading-relaxed">Documents uploaded via the console or REST API are split using recursive character splitting with a 50-token overlap to preserve semantic context across boundaries.</p>
+        </div>
+        <div class="p-3.5 rounded-lg border border-border bg-background space-y-2">
+          <div class="flex justify-between text-xs font-mono text-muted-foreground">
+            <span>Chunk #003</span>
+            <span>465 tokens</span>
+          </div>
+          <p class="text-xs text-zinc-300 leading-relaxed">To restrict browser usage of your publishable key (pk_live_*), add your production domains under Allowed Origins in the SDK settings panel.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const tabNames = {
+      overview: 'Overview',
+      sources: 'Knowledge Base',
+      playground: 'Playground',
+      sdk: 'SDK & API Keys',
+      logs: 'Chat Logs'
+    };
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-panel').forEach(el => el.classList.add('hidden'));
+      document.getElementById('tab-' + tabId).classList.remove('hidden');
+
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('bg-muted', 'text-white');
+        btn.classList.add('text-muted-foreground');
+      });
+      const activeBtn = document.querySelector(`.nav-btn[data-tab="${tabId}"]`);
+      if (activeBtn) {
+        activeBtn.classList.add('bg-muted', 'text-white');
+        activeBtn.classList.remove('text-muted-foreground');
+      }
+      document.getElementById('breadcrumb-page').innerText = tabNames[tabId];
+    }
+
+    function toggleProjectMenu() {
+      document.getElementById('project-menu').classList.toggle('hidden');
+    }
+
+    function selectProject(name, id) {
+      document.getElementById('current-project-name').innerText = name;
+      document.getElementById('current-project-id').innerText = id;
+      document.getElementById('breadcrumb-project').innerText = name;
+      document.getElementById('project-menu').classList.add('hidden');
+    }
+
+    function openChunkSheet(filename, chunks) {
+      document.getElementById('sheet-title').innerText = filename;
+      document.getElementById('sheet-meta').innerText = `${chunks} chunks • text-embedding-3-small • 512 tokens`;
+      document.getElementById('chunk-sheet').classList.remove('hidden');
+    }
+
+    function closeChunkSheet() {
+      document.getElementById('chunk-sheet').classList.add('hidden');
+    }
+
+    function copyText(text, btn) {
+      navigator.clipboard.writeText(text);
+      const orig = btn.innerText;
+      btn.innerText = 'Copied!';
+      setTimeout(() => btn.innerText = orig, 1500);
+    }
+
+    function simulateUpload() {
+      const tbody = document.getElementById('sources-tbody');
+      const row = document.createElement('tr');
+      row.className = 'hover:bg-muted/40 cursor-pointer transition';
+      row.onclick = () => openChunkSheet('api-webhooks-spec.md', 64);
+      row.innerHTML = `
+        <td class="px-4 py-3.5 font-mono text-xs font-medium text-white">api-webhooks-spec.md</td>
+        <td class="px-4 py-3.5"><span class="text-xs bg-muted px-2 py-0.5 rounded font-mono">MD</span></td>
+        <td class="px-4 py-3.5 font-mono text-xs">64</td>
+        <td class="px-4 py-3.5"><span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">● Ready</span></td>
+        <td class="px-4 py-3.5 text-right text-xs text-muted-foreground">Just now</td>
+      `;
+      tbody.prepend(row);
+    }
+
+    function sendPlaygroundMsg(e) {
+      e.preventDefault();
+      const input = document.getElementById('chat-input');
+      const val = input.value.trim();
+      if (!val) return;
+      const box = document.getElementById('chat-messages');
+      box.innerHTML += `
+        <div class="flex gap-3 justify-end">
+          <div class="bg-white text-black rounded-lg p-3 max-w-[85%] font-medium">${val}</div>
+        </div>
+        <div class="flex gap-3">
+          <div class="size-7 rounded-md bg-white text-black font-bold text-xs flex items-center justify-center shrink-0">AI</div>
+          <div class="bg-muted/60 border border-border rounded-lg p-3 max-w-[85%] space-y-2">
+            <p>Based on your indexed documentation, this feature is supported across all active project namespaces using your <code class="font-mono text-xs bg-background px-1 py-0.5 rounded">pk_live_</code> key.</p>
+            <span class="inline-block text-[11px] font-mono bg-background border border-border px-2 py-0.5 rounded text-zinc-300">📄 product-guide-v4.pdf (0.88)</span>
+          </div>
+        </div>
+      `;
+      input.value = '';
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function resetChat() {
+      document.getElementById('chat-messages').innerHTML = `
+        <div class="flex gap-3">
+          <div class="size-7 rounded-md bg-white text-black font-bold text-xs flex items-center justify-center shrink-0">AI</div>
+          <div class="bg-muted/60 border border-border rounded-lg p-3 max-w-[85%]">Chat cleared. Ask a new question to test retrieval.</div>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>

@@ -1,53 +1,45 @@
-import { FolderPlus } from "lucide-react";
 import { AppTopbar } from "@/components/layout/app-topbar";
-import { ProjectCard } from "@/components/projects/project-card";
+import { ProjectGrid } from "@/components/projects/project-grid";
 import { ProjectFormDemo } from "@/components/projects/project-form-demo";
-import { EmptyState } from "@/components/dashboard/empty-state";
-import { Skeleton } from "@/components/ui/skeleton";
-import { demoProjects, demoEmptyProjects } from "@/lib/demo-data";
+import { ProjectStatsCharts } from "@/components/projects/project-stats-charts";
+import { BlurFadeSection } from "@/components/motion/blur-fade-section";
+import { demoProjects } from "@/lib/demo-data";
 
 export default function ProjectsPage() {
-  const projects = demoProjects;
-  const showEmptyExample = false; // flip to true or use demoEmptyProjects to preview empty state
-
   return (
     <div className="space-y-6">
-      <AppTopbar
-        eyebrow="Knowledge spaces"
-        title="Projects"
-        description="Organize documents by product area, team, or use case. Retrieval can be scoped per project."
-        actions={<ProjectFormDemo />}
-      />
-
-      {showEmptyExample || projects.length === 0 ? (
-        <EmptyState
-          icon={FolderPlus}
-          title="No projects yet"
-          description="Create your first project to start grouping documents and asking cited questions. (Demo view)"
-          action={<ProjectFormDemo />}
+      <BlurFadeSection index={0}>
+        <AppTopbar
+          eyebrow="Knowledge spaces"
+          title="Projects"
+          description="Organize documents by product area, team, or use case."
+          actions={<ProjectFormDemo />}
         />
-      ) : (
-        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {projects.map((project) => (
-            <ProjectCard key={project.id} project={project} />
-          ))}
-        </section>
-      )}
+      </BlurFadeSection>
 
-      <section className="space-y-3">
-        <p className="text-sm font-medium text-muted-foreground">Skeleton preview</p>
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="rounded-xl border border-border/60 bg-card/35 p-5">
-              <Skeleton className="h-10 w-10 rounded-xl" />
-              <Skeleton className="mt-4 h-5 w-2/3" />
-              <Skeleton className="mt-2 h-4 w-full" />
-              <Skeleton className="mt-2 h-4 w-5/6" />
+      <BlurFadeSection index={1}>
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+          <div className="min-w-0 space-y-4">
+            <div>
+              <h2 className="text-lg font-semibold tracking-tight text-foreground">All projects</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Projects you have created in this workspace.
+              </p>
             </div>
-          ))}
+            <ProjectGrid projects={demoProjects} className="md:grid-cols-2 xl:grid-cols-2" />
+          </div>
+
+          <aside className="min-w-0 space-y-4">
+            <div>
+              <h2 className="text-lg font-semibold tracking-tight text-foreground">Stats</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Activity and content across your projects.
+              </p>
+            </div>
+            <ProjectStatsCharts projects={demoProjects} />
+          </aside>
         </div>
-        <p className="text-xs text-muted-foreground">Tip: swap `projects` with `demoEmptyProjects` from `lib/demo-data.ts` to preview the empty state.</p>
-      </section>
+      </BlurFadeSection>
     </div>
   );
 }

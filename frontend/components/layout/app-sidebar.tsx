@@ -1,81 +1,65 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard,
   FolderKanban,
-  Files,
-  MessageSquareText,
-  Users,
+  ChartColumn,
+  CreditCard,
   Settings,
   Sun,
   Moon,
   PanelLeftClose,
   PanelLeftOpen,
+  LayoutDashboard,
+  Files,
+  ArrowLeft,
 } from "lucide-react";
 import { Link } from "@/components/ui/link";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useUserSettings } from "@/components/providers/user-settings-provider";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useTheme } from "@/hooks/use-theme";
 
-type ThemeValue = "default" | "light";
-const THEME_KEY = "theme";
-
-const navGroups = [
-  {
-    label: "Workspace",
-    items: [
-      { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-      { href: "/projects", label: "Projects", icon: FolderKanban },
-      { href: "/documents", label: "Documents", icon: Files },
-    ],
-  },
-  {
-    label: "Tools",
-    items: [{ href: "/chat", label: "Chat", icon: MessageSquareText }],
-  },
-  {
-    label: "Manage",
-    items: [
-      { href: "/users", label: "Users", icon: Users },
-      { href: "/settings", label: "Settings", icon: Settings },
-    ],
-  },
+const globalNavItems = [
+  { href: "/dashboard", label: "Projects", icon: FolderKanban },
+  { href: "/usage", label: "Usage", icon: ChartColumn },
+  { href: "/billing", label: "Billing", icon: CreditCard },
+  { href: "/settings", label: "Org settings", icon: Settings },
 ];
 
-function isActive(pathname: string, href: string) {
-  if (href === "/dashboard") return pathname === "/dashboard";
+function getProjectNavItems(projectId: string) {
+  return [
+    { href: `/projects/${projectId}`, label: "Overview", icon: LayoutDashboard },
+    { href: `/projects/${projectId}/documents`, label: "Manage documents", icon: Files },
+    { href: `/projects/${projectId}/settings`, label: "Project settings", icon: Settings },
+  ];
+}
+
+function isActive(pathname: string, href: string, projectContext: boolean) {
+  if (projectContext) {
+    return pathname === href;
+  }
+  if (href === "/dashboard") {
+    return pathname === "/dashboard" || pathname.startsWith("/projects");
+  }
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function AppSidebar() {
+type AppSidebarProps = {
+  onOpenUserSettings?: () => void;
+};
+
+export function AppSidebar({ onOpenUserSettings }: AppSidebarProps) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
-  const [theme, setTheme] = useState<ThemeValue>("default");
+  const { isLight, toggleTheme } = useTheme();
+  const { settings, initials } = useUserSettings();
 
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(THEME_KEY);
-      if (stored === "light" || stored === "default") {
-        setTheme(stored);
-        return;
-      }
-    } catch {}
-    setTheme(document.documentElement.classList.contains("light") ? "light" : "default");
-  }, []);
-
-  const toggleTheme = () => {
-    const next: ThemeValue = theme === "light" ? "default" : "light";
-    const root = document.documentElement;
-    root.classList.remove("light", "dark-marketing");
-    if (next === "light") root.classList.add("light");
-    try {
-      localStorage.setItem(THEME_KEY, next);
-    } catch {}
-    setTheme(next);
-  };
-
-  const isLight = theme === "light";
+  const projectMatch = pathname.match(/^\/projects\/([^/]+)/);
+  const projectId = projectMatch?.[1];
+  const navItems = projectId ? getProjectNavItems(projectId) : globalNavItems;
 
   return (
     <aside
@@ -112,38 +96,42 @@ export function AppSidebar() {
         </Button>
       </div>
 
-      <nav className={cn("flex-1 space-y-5 overflow-y-auto", collapsed ? "p-2" : "p-3")}>
-        {navGroups.map((group) => (
-          <div key={group.label}>
-            {!collapsed && (
-              <div className="mb-1.5 px-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                {group.label}
-              </div>
-            )}
-            <div className="space-y-0.5">
-              {group.items.map((item) => {
-                const Icon = item.icon;
-                const active = isActive(pathname, item.href);
-                return (
-                  <Link key={item.href} href={item.href} className="block hover:text-foreground" title={collapsed ? item.label : undefined}>
-                    <span
-                      className={cn(
-                        "flex w-full items-center rounded-md text-sm font-medium transition-colors",
-                        collapsed ? "justify-center px-2 py-2" : "gap-2.5 px-2.5 py-2",
-                        active
-                          ? "bg-muted text-foreground"
-                          : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
-                      )}
-                    >
-                      <Icon className="h-4 w-4 shrink-0" />
-                      {!collapsed && item.label}
-                    </span>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        ))}
+      <nav className={cn("flex-1 space-y-1 overflow-y-auto", collapsed ? "p-2" : "p-3")}>
+        {projectId && !collapsed ? (
+          <Link
+            href="/dashboard"
+            className="mb-2 flex items-center gap-2 rounded-md px-2.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4 shrink-0" />
+            All projects
+          </Link>
+        ) : null}
+
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const active = isActive(pathname, item.href, Boolean(projectId));
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="block hover:text-foreground"
+              title={collapsed ? item.label : undefined}
+            >
+              <span
+                className={cn(
+                  "flex w-full items-center rounded-md text-sm font-medium transition-colors",
+                  collapsed ? "justify-center px-2 py-2" : "gap-2.5 px-2.5 py-2",
+                  active
+                    ? "bg-muted text-foreground"
+                    : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+                )}
+              >
+                <Icon className="h-4 w-4 shrink-0" />
+                {!collapsed && item.label}
+              </span>
+            </Link>
+          );
+        })}
       </nav>
 
       <div className={cn("border-t border-border", collapsed ? "p-2" : "p-3")}>
@@ -153,15 +141,28 @@ export function AppSidebar() {
             collapsed ? "flex-col gap-2 py-2" : "gap-2.5 p-2",
           )}
         >
-          <div className="flex size-8 shrink-0 items-center justify-center rounded-full border border-border bg-muted text-xs font-semibold">
-            U
-          </div>
-          {!collapsed && (
-            <div className="min-w-0 flex-1">
-              <div className="truncate font-medium text-foreground">User</div>
-              <div className="truncate text-xs text-muted-foreground">Workspace</div>
-            </div>
-          )}
+          <button
+            type="button"
+            onClick={onOpenUserSettings}
+            className={cn(
+              "flex min-w-0 cursor-pointer items-center rounded-md text-left transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              collapsed ? "justify-center p-0.5" : "flex-1 gap-2.5 px-1 py-1",
+            )}
+            aria-label="Open user settings"
+            title={collapsed ? settings.name : "User settings"}
+          >
+            <Avatar className="size-8 shrink-0 border border-border/60">
+              <AvatarFallback className="bg-muted text-xs font-semibold text-foreground">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            {!collapsed && (
+              <div className="min-w-0 flex-1">
+                <div className="truncate font-medium text-foreground">{settings.name}</div>
+                <div className="truncate text-xs text-muted-foreground">{settings.role}</div>
+              </div>
+            )}
+          </button>
           <Button
             variant="outline"
             size="icon"

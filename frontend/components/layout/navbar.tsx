@@ -9,10 +9,7 @@ import { LogIn, UserPlus, Sun, Moon } from "lucide-react";
 import { MobileMenu } from "./mobile-menu";
 import { springBouncy, springSnappy } from "@/lib/motion";
 import { cn } from "@/lib/utils";
-
-type ThemeValue = "default" | "light";
-
-const THEME_KEY = "theme";
+import { useTheme } from "@/hooks/use-theme";
 
 const navOptions = [
   { href: "/#capabilities", label: "Capabilities" },
@@ -21,20 +18,9 @@ const navOptions = [
 
 export function Navbar() {
   const clipId = useId().replace(/:/g, "");
-  const [theme, setTheme] = useState<ThemeValue>("default");
+  const { theme, isLight, toggleTheme } = useTheme();
   const [scrolled, setScrolled] = useState(false);
   const reduce = useReducedMotion();
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(THEME_KEY);
-      if (stored === "light" || stored === "default") {
-        setTheme(stored);
-        return;
-      }
-    } catch {}
-    setTheme(document.documentElement.classList.contains("light") ? "light" : "default");
-  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -42,19 +28,6 @@ export function Navbar() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
-  const toggleTheme = () => {
-    const next: ThemeValue = theme === "light" ? "default" : "light";
-    const root = document.documentElement;
-    root.classList.remove("light", "dark-marketing");
-    if (next === "light") root.classList.add("light");
-    try {
-      localStorage.setItem(THEME_KEY, next);
-    } catch {}
-    setTheme(next);
-  };
-
-  const isLight = theme === "light";
   const glass = scrolled ? "bg-background/74" : "bg-background/60";
   const edge = scrolled ? "border-border/70" : "border-border/55";
 

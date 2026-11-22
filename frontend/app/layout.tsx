@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Caveat, Inter, JetBrains_Mono } from "next/font/google";
+import { MotionProvider } from "@/components/motion/motion-provider";
 import "./globals.css";
 
 const inter = Inter({
@@ -43,7 +44,7 @@ export default function RootLayout({
           }}
         />
         <div className="mesh-gradient" aria-hidden="true" />
-        {children}
+        <MotionProvider>{children}</MotionProvider>
       </body>
     </html>
   );

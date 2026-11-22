@@ -1,15 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Link } from "@/components/ui/link";
 import { Button } from "@/components/ui/button";
 import { Menu, X, LogIn, UserPlus, Sun, Moon } from "lucide-react";
 import { springBouncy, springSnappy, springSoft } from "@/lib/motion";
-
-type ThemeValue = "default" | "light";
-const THEME_KEY = "theme";
+import { useTheme } from "@/hooks/use-theme";
 
 const navOptions = [
   { href: "/#capabilities", label: "Capabilities" },
@@ -18,43 +16,8 @@ const navOptions = [
 
 export function MobileMenu() {
   const [open, setOpen] = useState(false);
-  const [theme, setTheme] = useState<ThemeValue>(() => {
-    if (typeof window === "undefined") return "default";
-    try {
-      const stored = localStorage.getItem(THEME_KEY);
-      if (stored === "light" || stored === "default") return stored;
-    } catch {}
-    return document.documentElement.classList.contains("light") ? "light" : "default";
-  });
+  const { theme, isLight, toggleTheme } = useTheme();
   const reduce = useReducedMotion();
-
-  useEffect(() => {
-    if (!open) return;
-    const id = setTimeout(() => {
-      try {
-        const stored = localStorage.getItem(THEME_KEY);
-        if (stored === "light" || stored === "default") setTheme(stored);
-        else
-          setTheme(
-            document.documentElement.classList.contains("light") ? "light" : "default",
-          );
-      } catch {}
-    }, 0);
-    return () => clearTimeout(id);
-  }, [open]);
-
-  const toggleTheme = () => {
-    const next: ThemeValue = theme === "light" ? "default" : "light";
-    const root = document.documentElement;
-    root.classList.remove("light", "dark-marketing");
-    if (next === "light") root.classList.add("light");
-    try {
-      localStorage.setItem(THEME_KEY, next);
-    } catch {}
-    setTheme(next);
-  };
-
-  const isLight = theme === "light";
 
   return (
     <div className="md:hidden">

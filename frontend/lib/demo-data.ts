@@ -34,6 +34,9 @@ export type DemoProject = {
   description: string;
   status: "active" | "paused" | "draft";
   documentCount: number;
+  chunkCount: number;
+  queryCount: number;
+  publicKey: string;
   updatedAt: string;
   tags: string[];
 };
@@ -177,6 +180,9 @@ export const demoProjects: DemoProject[] = [
     description: "Customer-facing docs, onboarding guides, and release notes for the core platform.",
     status: "active",
     documentCount: 12,
+    chunkCount: 1482,
+    queryCount: 326,
+    publicKey: "pk_live_prj001_4f8a2c91d3e7b605",
     updatedAt: "12 min ago",
     tags: ["support", "public"],
   },
@@ -186,6 +192,9 @@ export const demoProjects: DemoProject[] = [
     description: "Incident response, deployment procedures, and internal infrastructure notes.",
     status: "active",
     documentCount: 8,
+    chunkCount: 934,
+    queryCount: 187,
+    publicKey: "pk_live_prj002_9b3d7e14a6c2f508",
     updatedAt: "1 hour ago",
     tags: ["internal", "ops"],
   },
@@ -195,6 +204,9 @@ export const demoProjects: DemoProject[] = [
     description: "Battlecards, pricing FAQs, and proposal templates for the GTM team.",
     status: "paused",
     documentCount: 5,
+    chunkCount: 421,
+    queryCount: 94,
+    publicKey: "pk_live_prj003_2c6f1a8b5d9e3704",
     updatedAt: "Yesterday",
     tags: ["gtm"],
   },
@@ -204,6 +216,9 @@ export const demoProjects: DemoProject[] = [
     description: "Market research PDFs and interview summaries waiting to be organized.",
     status: "draft",
     documentCount: 3,
+    chunkCount: 145,
+    queryCount: 12,
+    publicKey: "pk_live_prj004_7e1b4d9c2a6f8503",
     updatedAt: "3 days ago",
     tags: ["archive"],
   },
